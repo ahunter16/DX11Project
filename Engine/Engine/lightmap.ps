@@ -1,0 +1,28 @@
+Texture2D shaderTextures[2];
+SamplerState SampleType;
+
+struct PixelInputType
+{
+    float4 position : SV_Position;
+    float2 tex : TEXCOORD0;
+};
+
+
+float4 LightMapPixelShader(PixelInputType input) : SV_Target
+{
+    float4 color;
+    float4 lightColor;
+    float4 finalColor;
+
+    //Get pixel color from color texture
+    color = shaderTextures[0].Sample(SampleType, input.tex);
+
+    //Get pixel color from lightmap
+    lightColor = shaderTextures[1].Sample(SampleType, input.tex);
+
+    //Blend the two together
+    finalColor = color * lightColor;
+
+    return finalColor;
+
+}
