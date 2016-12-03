@@ -34,8 +34,14 @@ int GameObjectClass::GetIndexCount()
 	return m_Model->GetIndexCount();
 }
 
+D3DXVECTOR3 GameObjectClass::GetPosition()
+{
+	return m_position;
+}
+
 GameObjectClass::GameObjectClass()
 {
 	
 	m_Model = 0;
 }
+

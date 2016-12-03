@@ -108,8 +108,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	
-	result = m_objects.back()->Initialize(m_D3D, "../Engine/data/sphere.txt", L"../Engine/data/stone01.dds", L"../Engine/data/light01.dds", pos, hwnd);
+	pos.x += 1;
+	pos.y += 1;
+	result = m_objects.back()->Initialize(m_D3D, "../Engine/data/cube.txt", L"../Engine/data/stone01.dds", L"../Engine/data/light01.dds", pos, hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the game object.", L"Error", MB_OK);
@@ -504,15 +505,23 @@ bool GraphicsClass::Render(float rotation, float deltavalue)
 	//	return false;
 	//}
 
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
+
 	// Render the model using the multitexture shader.
-	//m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-	//	m_objects[0]->m_Model->GetTextureArray());
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_objects[0]->m_Model->GetTextureArray());
 
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
+	D3DXVECTOR3 objectPos = m_objects[1]->GetPosition();
+
+	D3DXMatrixTranslation(&worldMatrix, objectPos.x, objectPos.y, objectPos.z);
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_objects[1]->m_Model->Render(m_D3D->GetDeviceContext());//REQUIRED BEFORE RENDERING WITH A SHADER
 

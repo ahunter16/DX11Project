@@ -22,6 +22,7 @@ public:
 
 	void Render(ID3D11DeviceContext* deviceContext);
 	int GetIndexCount();
+	D3DXVECTOR3 GetPosition();
 	ModelClass* m_Model;
 private:
 
