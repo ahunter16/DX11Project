@@ -23,6 +23,8 @@
 #include "frustumclass.h"
 #include "multitextureshaderclass.h"
 #include "lightmapshaderclass.h"
+#include "debugwindowclass.h"
+#include "rendertextureclass.h"
 
 /////////////
 //GLOBALS //
@@ -49,6 +51,8 @@ public:
 
 private:
 	bool Render(float, float);
+	bool RenderScene(float, float);
+	bool RenderToTexture(float, float);
 
 private:
 	
@@ -58,7 +62,8 @@ private:
 	ModelClass* m_Model;
 	LightShaderClass* m_LightShader;
 	LightClass* m_Light;
-	//GameObjectClass* m_gameobjectclass;
+	RenderTextureClass* m_RenderTexture;
+	DebugWindowClass* m_DebugWindow;
 	TextureShaderClass* m_TextureShader;
 	int m_rotation;
 
