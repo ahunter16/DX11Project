@@ -23,7 +23,6 @@
 ///////////////////////
 #include "inputclass.h"
 #include "graphicsclass.h"
-#include "applicationclass.h"
 
 #include "fpsclass.h"
 #include "cpuclass.h"
@@ -57,10 +56,15 @@ private:
 	HINSTANCE m_hinstance;
 	HWND m_hwnd;
 
-	ApplicationClass* m_Application;
+	InputClass* m_Input;
+	GraphicsClass* m_Graphics;
+	
+	FpsClass* m_Fps;
+	CpuClass* m_Cpu;
+	TimerClass* m_Timer;
+	PositionClass* m_Position;
 
 	clock_t m_timeAtLastFrame;
-
 };
 
 

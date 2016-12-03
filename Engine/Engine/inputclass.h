@@ -1,31 +1,32 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: inputclass.h
+//Filename: inputclass.h
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef _INPUTCLASS_H_
 #define _INPUTCLASS_H_
 
 
 ///////////////////////////////
-// PRE-PROCESSING DIRECTIVES //
+//PRE-PROCESSING DIRECTIVES //
 ///////////////////////////////
 #define DIRECTINPUT_VERSION 0x0800
 
 
 /////////////
-// LINKING //
+//LINKING //
 /////////////
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
 
 //////////////
-// INCLUDES //
+//INCLUDES //
 //////////////
 #include <dinput.h>
+#include "d3dclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: InputClass
+//Class name: InputClass
 ////////////////////////////////////////////////////////////////////////////////
 class InputClass
 {
@@ -38,17 +39,13 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	void GetMouseLocation(int&, int&);
-
-	bool IsEscapePressed();
-	bool IsLeftPressed();
-	bool IsRightPressed();
-	bool IsUpPressed();
-	bool IsDownPressed();
 	bool IsAPressed();
-	bool IsZPressed();
-	bool IsPgUpPressed();
-	bool IsPgDownPressed();
+	bool IsRightArrowPressed();
+	bool IsLeftArrowPressed();
+
+	D3DXVECTOR3 HandleMovement(float dt);
+	bool IsEscapePressed();
+	void GetMouseLocation(int&, int&);
 
 private:
 	bool ReadKeyboard();

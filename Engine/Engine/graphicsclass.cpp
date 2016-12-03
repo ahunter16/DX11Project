@@ -519,5 +519,12 @@ bool GraphicsClass::Render(float rotation, float deltavalue)
 	
 	m_LightMapShader->Render(m_D3D->GetDeviceContext(), m_objects[1]->m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_objects[1]->m_Model->GetTextureArray());
 
+	
+
+	//Present the rendered scene to the screen.
+	m_D3D->EndScene();
+
+
+
 	return true;
 }

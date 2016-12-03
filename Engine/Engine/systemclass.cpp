@@ -6,9 +6,12 @@
 
 SystemClass::SystemClass()
 {
-
-
-	m_Application = 0;
+	m_Input = 0;
+	m_Graphics = 0;
+	m_Fps = 0;
+	m_Cpu = 0;
+	m_Timer = 0;
+	m_Position = 0;
 }
 
 
@@ -35,17 +38,68 @@ bool SystemClass::Initialize()
 	//Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
 
-
-	// Create the application wrapper object.
-	m_Application = new ApplicationClass;
-	if (!m_Application)
+	//Create the input object.  This object will be used to handle reading the keyboard input from the user.
+	m_Input = new InputClass;
+	if(!m_Input)
 	{
 		return false;
 	}
 
-	// Initialize the application wrapper object.
-	result = m_Application->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
+	//Initialize the input object.
+	m_Input->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
+
+	//Create the graphics object.  This object will handle rendering all the graphics for this application.
+	m_Graphics = new GraphicsClass;
+	if(!m_Graphics)
+	{
+		return false;
+	}
+
+	//Initialize the graphics object.
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	if(!result)
+	{
+		return false;
+	}
+
+	//Create and initialize the FpsClass
+	m_Fps = new FpsClass;
+	if (!m_Fps)
+	{
+		return false;
+	}
+
+	//initialize the fps object
+	m_Fps->Initialize();
+
+	//Create the cpu object
+	m_Cpu = new CpuClass;
+	if (!m_Cpu)
+	{
+		return false;
+	}
+
+	//Initialize the cpu object
+	m_Cpu->Initialize();
+
+	//Create the timer object
+	m_Timer = new TimerClass;
+	if (!m_Timer)
+	{
+		return false;
+	}
+
+	//Initialize the timer object
+	result = m_Timer->Initialize();
 	if (!result)
+	{
+		MessageBox(m_hwnd, L"Could not initialize the Timer object", L"Error", MB_OK);
+		return false;
+	}
+
+	//Create the position object.
+	m_Position = new PositionClass;
+	if (!m_Position)
 	{
 		return false;
 	}
@@ -57,15 +111,49 @@ bool SystemClass::Initialize()
 
 void SystemClass::Shutdown()
 {
-
-	// Release the application wrapper object.
-	if (m_Application)
+	//Release the position object.
+	if (m_Position)
 	{
-		m_Application->Shutdown();
-		delete m_Application;
-		m_Application = 0;
+		delete m_Position;
+		m_Position = 0;
 	}
 
+	//Release the timer object.
+	if (m_Timer)
+	{
+		delete m_Timer;
+		m_Timer = 0;
+	}
+
+	//Release the cpu object.
+	if (m_Cpu)
+	{
+		m_Cpu->Shutdown();
+		delete m_Cpu;
+		m_Cpu = 0;
+	}
+
+	//Release the fps object.
+	if (m_Fps)
+	{
+		delete m_Fps;
+		m_Fps = 0;
+	}
+
+	//Release the graphics object.
+	if(m_Graphics)
+	{
+		m_Graphics->Shutdown();
+		delete m_Graphics;
+		m_Graphics = 0;
+	}
+
+	//Release the input object.
+	if(m_Input)
+	{
+		delete m_Input;
+		m_Input = 0;
+	}
 
 	//Shutdown the window.
 	ShutdownWindows();
@@ -109,7 +197,10 @@ void SystemClass::Run()
 			}
 		}
 
-
+		if (m_Input->IsEscapePressed() == true)
+		{
+			done = true;
+		}
 	}
 
 	return;
@@ -119,20 +210,47 @@ void SystemClass::Run()
 
 bool SystemClass::Frame()
 {
-	bool result;
+	float dt, rotationY;
+	bool keyDown, result;
+	int mouseX, mouseY;
+
+	m_Timer->Frame();
+	m_Fps->Frame();
+	m_Cpu->Frame();
 
 
-	// Do the frame processing for the application object.
-	result = m_Application->Frame();
+	dt = float(clock() - m_timeAtLastFrame) / CLOCKS_PER_SEC;
+	m_timeAtLastFrame = clock();
+
+
+	result = m_Input->Frame();
 	if (!result)
 	{
 		return false;
 	}
+
+	m_Input->GetMouseLocation(mouseX, mouseY);
+
+	//Set the frame time for calculating the updates position
+	m_Position->SetFrameTime(m_Timer->GetTime());
+
+	//Check if the left or right arrow key has been pressed, if so rotate accordingly
+	keyDown = m_Input->IsLeftArrowPressed();
+	m_Position->TurnLeft(keyDown);
 	
+	keyDown = m_Input->IsRightArrowPressed();
+	m_Position->TurnRight(keyDown);
 
-	
+	m_Position->GetRotation(rotationY);
 
+	D3DXVECTOR3 cameraPos = m_Input->HandleMovement(dt);
 
+	//Do the frame processing for the graphics object.
+	result = m_Graphics->Frame(cameraPos, mouseX, mouseY, m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), dt, rotationY);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
