@@ -90,6 +90,15 @@
     <ClCompile Include="lightmapshaderclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="terrainclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="applicationclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="colorshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cameraclass.h">
@@ -164,6 +173,15 @@
     <ClInclude Include="lightmapshaderclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="terrainclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="applicationclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colorshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="light.ps">
@@ -194,6 +212,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="lightmap.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="color.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="color.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

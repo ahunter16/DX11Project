@@ -147,41 +147,71 @@ void TextClass::Shutdown()
 }
 
 
-bool TextClass::Render(ID3D11DeviceContext* deviceContext, D3DXMATRIX worldMatrix, D3DXMATRIX orthoMatrix)
+bool TextClass::Render(ID3D11DeviceContext* deviceContext, FontShaderClass* FontShader, D3DXMATRIX worldMatrix, D3DXMATRIX orthoMatrix)
 {
 	bool result;
 
 
-	//Draw the first sentence.
-	result = RenderSentence(deviceContext, m_sentence1, worldMatrix, orthoMatrix);
-	if(!result)
-	{
-		return false;
-	}
+	////Draw the first sentence.
+	//result = RenderSentence(deviceContext, m_sentence1, worldMatrix, orthoMatrix);
+	//if(!result)
+	//{
+	//	return false;
+	//}
 
-	//Draw the second sentence.
-	result = RenderSentence(deviceContext, m_sentence2, worldMatrix, orthoMatrix);
-	if(!result)
-	{
-		return false;
-	}
+	////Draw the second sentence.
+	//result = RenderSentence(deviceContext, m_sentence2, worldMatrix, orthoMatrix);
+	//if(!result)
+	//{
+	//	return false;
+	//}
 
-	//Draw the third sentence.
-	result = RenderSentence(deviceContext, m_sentence3, worldMatrix, orthoMatrix);
+	////Draw the third sentence.
+	//result = RenderSentence(deviceContext, m_sentence3, worldMatrix, orthoMatrix);
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	////Draw the fourth sentence.
+	//result = RenderSentence(deviceContext, m_sentence4, worldMatrix, orthoMatrix);
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	////Draw the fourth sentence.
+	//result = RenderSentence(deviceContext, m_sentence5, worldMatrix, orthoMatrix);
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	result = RenderSentence(m_sentence1, deviceContext, FontShader, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
 	}
 
-	//Draw the fourth sentence.
-	result = RenderSentence(deviceContext, m_sentence4, worldMatrix, orthoMatrix);
+	result = RenderSentence(m_sentence2, deviceContext, FontShader, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
 	}
 
-	//Draw the fourth sentence.
-	result = RenderSentence(deviceContext, m_sentence5, worldMatrix, orthoMatrix);
+	result = RenderSentence(m_sentence3, deviceContext, FontShader, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = RenderSentence(m_sentence4, deviceContext, FontShader, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = RenderSentence(m_sentence5, deviceContext, FontShader, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
