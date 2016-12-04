@@ -24,6 +24,12 @@ bool GameObjectClass::Initialize(D3DClass* m_D3D, char* modelName, WCHAR* filena
 	return true;
 }
 
+void GameObjectClass::Shutdown()
+{
+	m_Model->Shutdown();
+	m_Model = 0;
+}
+
 void GameObjectClass::Render(ID3D11DeviceContext* deviceContext)
 {
 	m_Model->Render(deviceContext);

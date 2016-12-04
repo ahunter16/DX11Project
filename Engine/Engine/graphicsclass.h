@@ -26,14 +26,15 @@
 #include "debugwindowclass.h"
 #include "rendertextureclass.h"
 #include "reflectionshaderclass.h"
+#include "depthshaderclass.h"
 
 /////////////
 //GLOBALS //
 /////////////
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
-const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 0.1f;
+const float SCREEN_DEPTH = 100.0f;
+const float SCREEN_NEAR = 1.0f;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,8 @@ public:
 	bool Render(float, float);
 
 private:
-
+	bool InitializeObjects(HWND hwnd);
+	bool InitializeObject(char* modelName, WCHAR* filename1, WCHAR* filename2, D3DXVECTOR3 pos, HWND hwnd);
 	bool RenderScene(float, float);
 	bool RenderToTexture(float, float);
 
@@ -77,6 +79,7 @@ private:
 	LightMapShaderClass* m_LightMapShader;
 
 	ReflectionShaderClass* m_ReflectionShader;
+	DepthShaderClass* m_DepthShader;
 };
 
 #endif

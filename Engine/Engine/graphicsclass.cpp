@@ -22,6 +22,7 @@ GraphicsClass::GraphicsClass()
 	m_RenderTexture = 0;
 	m_DebugWindow = 0;
 	m_ReflectionShader = 0;
+	m_DepthShader = 0;
 	m_objects.clear();
 }
 
@@ -41,15 +42,15 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	bool result;
 	D3DXMATRIX baseViewMatrix;
 
-		
-	//Create the Direct3D object.
+
+	//Create the Direct3D object
 	m_D3D = new D3DClass;
 	if(!m_D3D)
 	{
 		return false;
 	}
 
-	//Initialize the Direct3D object.
+	//Initialize the Direct3D object
 	result = m_D3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	if(!result)
 	{
@@ -57,7 +58,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	//Create the camera object.
+	//Create the camera object
 	m_Camera = new CameraClass;
 	if(!m_Camera)
 	{
@@ -65,7 +66,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	//Initialize a base view matrix with the camera for 2D user interface rendering.
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 2.0f, -10.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
@@ -80,79 +81,34 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	m_objects.push_back(new GameObjectClass);
-	if (!m_objects.back())
-	{
+		MessageBox(hwnd, L"Could not initialize the texture shader object", L"Error", MB_OK);
 		return false;
 	}
 
 
-	D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	result = m_objects.back()->Initialize(m_D3D, "../Engine/data/cube.txt", L"../Engine/data/stone01.dds", L"../Engine/data/dirt01.dds", pos, hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the game object.", L"Error", MB_OK);
-		return false;
-	}
-
-	m_objects.push_back(new GameObjectClass);
-	if (!m_objects.back())
-	{
-		return false;
-	}
-
-	pos.x += 1;
-	pos.y += 1;
-	result = m_objects.back()->Initialize(m_D3D, "../Engine/data/sphere.txt", L"../Engine/data/stone01.dds", L"../Engine/data/light01.dds", pos, hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the game object.", L"Error", MB_OK);
-		return false;
-	}
-
-	m_objects.push_back(new GameObjectClass);
-	if (!m_objects.back())
-	{
-		return false;
-	}
-	pos.x -= 1;
-	pos.y = -2.5;
-	//Floor model object
-	result = m_objects.back()->Initialize(m_D3D, "../Engine/data/floor.txt", L"../Engine/data/blue01.dds", L"../Engine/data/blue01.dds", pos, hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the floor gameobject.", L"Error", MB_OK);
-		return false;
-	}
-
-
-	//Create the light shader object.
+	//Create the light shader object
 	m_LightShader = new LightShaderClass;
 	if (!m_LightShader)
 	{
 		return false;
 	}
 
-	//Initialize the light shader object.
+	//Initialize the light shader object
 	result = m_LightShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the light shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the light shader object", L"Error", MB_OK);
 		return false;
 	}
 
-	//Create the light object.
+	//Create the light object
 	m_Light = new LightClass;
 	if (!m_Light)
 	{
 		return false;
 	}
 
-	//Initialize the light object.
+	//Initialize the light object
 	m_Light->SetDiffuseColor(0.0f, 0.5f, 0.5f, 1.0f);
 	m_Light->SetDirection(1.0f, 0.0f, 1.0f); //changed from 1,0,0 to 0,0,1
 	m_Light->SetAmbientColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -174,7 +130,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	//Create the frustum object.
+	//Create the frustum object
 	m_Frustum = new FrustumClass;
 	if (!m_Frustum)
 	{
@@ -203,85 +159,169 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	//Initialize the text object.
+	//Initialize the text object
 	result = m_Text->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
 	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the text object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the text object", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the multitexture shader object.
+	// Create the multitexture shader object
 	m_MultiTextureShader = new MultiTextureShaderClass;
 	if (!m_MultiTextureShader)
 	{
 		return false;
 	}
 
-	// Initialize the multitexture shader object.
+	// Initialize the multitexture shader object
 	result = m_MultiTextureShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the multitexture shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the multitexture shader object", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the light map shader object.
+	// Create the light map shader object
 	m_LightMapShader = new LightMapShaderClass;
 	if (!m_LightMapShader)
 	{
 		return false;
 	}
 
-	// Initialize the light map shader object.
+	// Initialize the light map shader object
 	result = m_LightMapShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the light map shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the light map shader object", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the render to texture object.
+	// Create the render to texture object
 	m_RenderTexture = new RenderTextureClass;
 	if (!m_RenderTexture)
 	{
 		return false;
 	}
 
-	// Initialize the render to texture object.
+	// Initialize the render to texture object
 	result = m_RenderTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight);
 	if (!result)
 	{
 		return false;
 	}
 
-	// Create the debug window object.
+	// Create the debug window object
 	m_DebugWindow = new DebugWindowClass;
 	if (!m_DebugWindow)
 	{
 		return false;
 	}
 
-	// Initialize the debug window object.
+	// Initialize the debug window object
 	result = m_DebugWindow->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, 100, 100);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the debug window object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the debug window object", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the reflection shader object.
+	// Create the reflection shader object
 	m_ReflectionShader = new ReflectionShaderClass;
 	if (!m_ReflectionShader)
 	{
 		return false;
 	}
 
-	// Initialize the reflection shader object.
+	// Initialize the reflection shader object
 	result = m_ReflectionShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the reflection shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the reflection shader object", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the depth shader object
+	m_DepthShader = new DepthShaderClass;
+	if (!m_DepthShader)
+	{
+		return false;
+	}
+
+	// Initialize the depth shader object
+	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the depth shader object", L"Error", MB_OK);
+		return false;
+	}
+
+
+	//initialize all objects in the scene at once
+	result = InitializeObjects(hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
+
+	return true;
+}
+
+bool GraphicsClass::InitializeObjects(HWND hwnd)
+{
+	bool result;
+	D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	result = InitializeObject("../Engine/data/cube.txt", L"../Engine/data/stone01.dds", L"../Engine/data/dirt01.dds", pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the game object", L"Error", MB_OK);
+		return false;
+	}
+
+	pos.x += 1;
+	pos.y += 1;
+	result = InitializeObject("../Engine/data/sphere.txt", L"../Engine/data/stone01.dds", L"../Engine/data/light01.dds", pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the game object", L"Error", MB_OK);
+		return false;
+	}
+
+	pos.x -= 1;
+	pos.y = -2.5;
+	//Floor model object
+	result = InitializeObject("../Engine/data/floor.txt", L"../Engine/data/blue01.dds", L"../Engine/data/blue01.dds", pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the floor gameobject.", L"Error", MB_OK);
+		return false;
+	}
+	pos.x = 3;
+	pos.y = 0;
+	result = InitializeObject("../Engine/data/floor.txt", L"../Engine/data/blue01.dds", L"../Engine/data/blue01.dds", pos, hwnd);
+	if (!result) 
+	{
+		MessageBox(hwnd, L"Could not initialize the other floor gameobject.", L"Error", MB_OK);
+		return false; 
+	}
+
+	return true;
+}
+
+bool GraphicsClass::InitializeObject(char* modelName, WCHAR* filename1, WCHAR* filename2, D3DXVECTOR3 pos, HWND hwnd)
+{
+	bool result;
+	m_objects.push_back(new GameObjectClass);
+	if (!m_objects.back())
+	{
+		return false;
+	}
+
+	result = m_objects.back()->Initialize(m_D3D, modelName, filename1, filename2, pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the game object", L"Error", MB_OK);
 		return false;
 	}
 
@@ -292,8 +332,21 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+	//Release all game objects
+	for (int i = 0; i < m_objects.size(); i++)
+	{
+		m_objects[i]->Shutdown();
+	}
 
-	// Release the reflection shader object.
+	// Release the depth shader object.
+	if (m_DepthShader)
+	{
+		m_DepthShader->Shutdown();
+		delete m_DepthShader;
+		m_DepthShader = 0;
+	}
+
+	// Release the reflection shader object
 	if (m_ReflectionShader)
 	{
 		m_ReflectionShader->Shutdown();
@@ -301,7 +354,7 @@ void GraphicsClass::Shutdown()
 		m_ReflectionShader = 0;
 	}
 
-	// Release the debug window object.
+	// Release the debug window object
 	if (m_DebugWindow)
 	{
 		m_DebugWindow->Shutdown();
@@ -309,7 +362,7 @@ void GraphicsClass::Shutdown()
 		m_DebugWindow = 0;
 	}
 
-	// Release the render to texture object.
+	// Release the render to texture object
 	if (m_RenderTexture)
 	{
 		m_RenderTexture->Shutdown();
@@ -317,7 +370,7 @@ void GraphicsClass::Shutdown()
 		m_RenderTexture = 0;
 	}
 
-	// Release the light map shader object.
+	// Release the light map shader object
 	if (m_LightMapShader)
 	{
 		m_LightMapShader->Shutdown();
@@ -325,7 +378,7 @@ void GraphicsClass::Shutdown()
 		m_LightMapShader = 0;
 	}
 
-	// Release the multitexture shader object.
+	// Release the multitexture shader object
 	if (m_MultiTextureShader)
 	{
 		m_MultiTextureShader->Shutdown();
@@ -333,21 +386,21 @@ void GraphicsClass::Shutdown()
 		m_MultiTextureShader = 0;
 	}
 
-	//Release the frustum object.
+	//Release the frustum object
 	if (m_Frustum)
 	{
 		delete m_Frustum;
 		m_Frustum = 0;
 	}
 
-	//Release the model list object.
+	//Release the model list object
 	if (m_ModelList)
 	{
 		m_ModelList->Shutdown();
 		delete m_ModelList;
 		m_ModelList = 0;
 	}
-	//Release the text object.
+	//Release the text object
 	if (m_Text)
 	{
 		m_Text->Shutdown();
@@ -355,7 +408,7 @@ void GraphicsClass::Shutdown()
 		m_Text = 0;
 	}
 
-	//Release the bitmap object.
+	//Release the bitmap object
 	if (m_Bitmap)
 	{
 		m_Bitmap->Shutdown();
@@ -363,7 +416,7 @@ void GraphicsClass::Shutdown()
 		m_Bitmap = 0;
 	}
 
-	//Release the texture shader object.
+	//Release the texture shader object
 	if (m_TextureShader)
 	{
 		m_TextureShader->Shutdown();
@@ -371,14 +424,14 @@ void GraphicsClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
-	//Release the light object.
+	//Release the light object
 	if (m_Light)
 	{
 		delete m_Light;
 		m_Light = 0;
 	}
 
-	//Release the light shader object.
+	//Release the light shader object
 	if (m_LightShader)
 	{
 		m_LightShader->Shutdown();
@@ -393,7 +446,7 @@ void GraphicsClass::Shutdown()
 	//}
 
 
-	//Release the camera object.
+	//Release the camera object
 	if (m_Camera)
 	{
 		delete m_Camera;
@@ -402,7 +455,7 @@ void GraphicsClass::Shutdown()
 
 
 
-	//Release the D3D object.
+	//Release the D3D object
 	if (m_D3D)
 	{
 		m_D3D->Shutdown();
@@ -437,21 +490,8 @@ bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int 
 		return false;
 	}
 
-	//Update the rotation variable each frame.
-	rotation += (float)D3DX_PI *0.01f;
-	if (rotation > 360.0f)
-	{
-		rotation -= 360.0f;
-	}
 
-	delta = 0.0f;
 
-	//Render the graphics scene.
-	result = Render(rotation, delta);
-	if (!result)
-	{
-		return false;
-	}
 	//	difftime()
 	D3DXVECTOR3	cameraPos = m_Camera->GetPosition() + cameraOffset;
 	m_Camera->SetPosition(cameraPos.x, cameraPos.y, cameraPos.z);
@@ -549,7 +589,11 @@ bool GraphicsClass::RenderScene(float rotation, float deltavalue)
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
+	m_objects[3]->Render(m_D3D->GetDeviceContext());
 
+	//REnder the model using the depth shader
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[3]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	if (!result) { return false; }
 
 	////Construct the frustum
 	//m_Frustum->ConstructFrustum(SCREEN_DEPTH, projectionMatrix, viewMatrix);
