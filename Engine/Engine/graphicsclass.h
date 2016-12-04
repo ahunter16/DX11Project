@@ -25,6 +25,7 @@
 #include "lightmapshaderclass.h"
 #include "debugwindowclass.h"
 #include "rendertextureclass.h"
+#include "reflectionshaderclass.h"
 
 /////////////
 //GLOBALS //
@@ -48,9 +49,10 @@ public:
 	bool Initialize(int, int, HWND);
 	void Shutdown();
 	bool Frame(D3DXVECTOR3, int, int, int, int, float, float, float);
+	bool Render(float, float);
 
 private:
-	bool Render(float, float);
+
 	bool RenderScene(float, float);
 	bool RenderToTexture(float, float);
 
@@ -73,6 +75,8 @@ private:
 	FrustumClass* m_Frustum;
 	MultiTextureShaderClass* m_MultiTextureShader;
 	LightMapShaderClass* m_LightMapShader;
+
+	ReflectionShaderClass* m_ReflectionShader;
 };
 
 #endif

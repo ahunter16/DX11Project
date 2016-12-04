@@ -252,6 +252,12 @@ bool SystemClass::Frame()
 		return false;
 	}
 
+	result = m_Graphics->Render(dt, rotationY);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 

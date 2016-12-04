@@ -100,6 +100,7 @@
     <ClCompile Include="modellist.cpp" />
     <ClCompile Include="multitextureshaderclass.cpp" />
     <ClCompile Include="positionclass.cpp" />
+    <ClCompile Include="reflectionshaderclass.cpp" />
     <ClCompile Include="rendertextureclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="textclass.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="modellistclass.h" />
     <ClInclude Include="multitextureshaderclass.h" />
     <ClInclude Include="positionclass.h" />
+    <ClInclude Include="reflectionshaderclass.h" />
     <ClInclude Include="rendertextureclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="textclass.h" />
@@ -145,6 +147,8 @@
     <None Include="lightmap.vs" />
     <None Include="multitexture.ps" />
     <None Include="multitexture.vs" />
+    <None Include="reflection.ps" />
+    <None Include="reflection.vs" />
     <None Include="texture.ps" />
     <None Include="texture.vs" />
   </ItemGroup>
