@@ -45,6 +45,14 @@ D3DXVECTOR3 GameObjectClass::GetPosition()
 	return m_position;
 }
 
+void GameObjectClass::GetPosition(float& x, float& y, float& z)
+{
+	x = m_position.x;
+	y = m_position.y;
+	z = m_position.z;
+	return;
+}
+
 GameObjectClass::GameObjectClass()
 {
 	
