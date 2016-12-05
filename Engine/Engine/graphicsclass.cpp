@@ -25,6 +25,8 @@ GraphicsClass::GraphicsClass()
 	m_DepthShader = 0;
 	m_ShadowShader = 0;
 	m_ShadowMapTexture = 0;
+	m_ParticleShader = 0;
+	m_ParticleSystem = 0;
 	m_objects.clear();
 }
 
@@ -300,6 +302,35 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	//Create the particle shader object
+	m_ParticleShader = new ParticleShaderClass;
+	if (!m_ParticleShader)
+	{
+		return false;
+	}
+
+	//Initialize the particle shader object
+	result = m_ParticleShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the particle shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	//Create the particle system object
+	m_ParticleSystem = new ParticleSystemClass;
+	if (!m_ParticleSystem)
+	{
+		return false;
+	}
+
+	//Initialize the particle system object.
+	result = m_ParticleSystem->Initialize(m_D3D->GetDevice(), L"../Engine/data/smoke.jpg");
+	if (!result)
+	{
+		return false;
+	}
+
 
 	return true;
 }
@@ -407,6 +438,22 @@ void GraphicsClass::Shutdown()
 	for (int i = 0; i < m_objects.size(); i++)
 	{
 		m_objects[i]->Shutdown();
+	}
+
+	// Release the particle system object.
+	if (m_ParticleSystem)
+	{
+		m_ParticleSystem->Shutdown();
+		delete m_ParticleSystem;
+		m_ParticleSystem = 0;
+	}
+
+	// Release the particle shader object.
+	if (m_ParticleShader)
+	{
+		m_ParticleShader->Shutdown();
+		delete m_ParticleShader;
+		m_ParticleShader = 0;
 	}
 
 	//Release the shadow map texture object
@@ -622,6 +669,9 @@ bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int 
 	m_Camera->SetPosition(cameraPos.x, cameraPos.y, cameraPos.z);
 	m_Camera->SetRotation(mouseX/800, rotationY, 0.0f);
 
+	// Run the frame processing for the particle system.
+	m_ParticleSystem->Frame(frameTime, m_D3D->GetDeviceContext());
+
 	result = RenderToTexture();
 	if (!result)
 	{
@@ -736,9 +786,13 @@ bool GraphicsClass::Render()
 	{
 		return false;
 	}
-
+	D3DXVECTOR4 col = m_Light->GetAmbientColor();
 	// Clear the buffers to begin the scene.
-	m_D3D->BeginScene(0.5f, 1.0f, 1.0f, 1.0f);
+	m_D3D->BeginScene(
+		2*col.x, 
+		2.5*col.y, 
+		5*col.z, 
+		1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -872,7 +926,30 @@ bool GraphicsClass::Render()
 		return false;
 	}
 
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_objects[0]->GetPosition(posX, posY, posZ);
+	D3DXMatrixTranslation(&worldMatrix, posX+1, -0.5f, posZ+1);
+	// Turn on alpha blending.
+	m_D3D->TurnOnAlphaBlending();
 
+
+	// Put the particle system vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_ParticleSystem->Render(m_D3D->GetDeviceContext());
+
+	// Render the model using the texture shader.
+	result = m_ParticleShader->Render(m_D3D->GetDeviceContext(), m_ParticleSystem->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_ParticleSystem->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+
+	// Turn off alpha blending.
+	m_D3D->TurnOffAlphaBlending();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

@@ -30,6 +30,8 @@
 #include "shadowshaderclass.h"
 //effectively a modified rendertextureclass
 #include "shadowmapclass.h"
+#include "particleshaderclass.h"
+#include "particlesystemclass.h"
 
 /////////////
 //GLOBALS //
@@ -95,6 +97,9 @@ private:
 	DepthShaderClass* m_DepthShader;
 	ShadowShaderClass* m_ShadowShader;
 	ShadowMapClass* m_ShadowMapTexture;
+
+	ParticleShaderClass* m_ParticleShader;
+	ParticleSystemClass* m_ParticleSystem;
 };
 
 #endif
