@@ -117,7 +117,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
 	m_Light->SetSpecularPower(32.0f);
 	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
-	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
 	//Create the model list object
 	m_ModelList = new ModelListClass;
@@ -223,7 +223,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the render to texture object.
-	result = m_ShadowMapTexture->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SCREEN_DEPTH, SCREEN_NEAR);
+	result = m_ShadowMapTexture->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the shadow map texture object.", L"Error", MB_OK);
@@ -558,28 +558,44 @@ void GraphicsClass::Shutdown()
 bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int fps, int cpu, float frameTime, float dt, float rotationY)
 {
 	bool result;
+	static float lightAngle = 180.0f;
+	float radians;
+	static float lightPosX = 9.0f;
 	static float rotation = 0.0f;
 	static float delta = 0.0f;
 	static float lightPositionX = -5.0f;
 	static float lightPositionZ = -5.0f;
-	static int lightdirectionX = 1;
+	static int lightdirection = 1;
+
 
 	// Update the position of the light each frame.
-	//lightPositionX += lightdirectionX*0.05f;
-	//if (lightPositionX > 10.0f || lightPositionX < -10.0f)
-	//{
-	//	lightdirectionX *= -1;//lightPositionX = -5.0f;
-	//}
-	rotation += 0.02f;
-	if (rotation >= 360)
-	{
-		rotation = rotation - 360;
-	}
-	lightPositionX = 20 * cos(rotation);
-	lightPositionZ = 20 * sin(rotation);
+	//lightPosX -= 0.003f * frameTime * lightdirection;
 
-	// Update the position of the light.
-	m_Light->SetPosition(lightPositionX, 10.0f, lightPositionZ);
+	// Update the angle of the light each frame.
+	
+	lightAngle -= 0.03f * frameTime;
+	radians = lightAngle * 0.0174532925f;
+
+
+	m_Light->SetAmbientColor(
+		0.2f+0.1f*(1-sinf((-90+lightAngle) * 0.0174532925f)),
+		0.2*sinf((-90+lightAngle) * 0.0174532925f),
+		0.2f,
+		1.0f);
+	if (lightAngle < 0)
+	{
+		lightAngle = lightAngle + 360;
+	}
+
+
+	lightPosX = 9 * cosf(radians);
+	lightPositionZ = 9 * sinf(radians);
+	// Update the direction of the light.
+	m_Light->SetDirection(sinf(radians), cosf(radians), 0.0f);
+
+	// Set the position and lookat for the light.
+	m_Light->SetPosition(lightPosX, 8.0f, lightPositionZ);
+	m_Light->SetLookAt(-lightPosX, 0.0f,-lightPositionZ);
 
 
 	//SEt the frames per second
@@ -625,7 +641,7 @@ bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int 
 
 bool GraphicsClass::RenderSceneToTexture()
 {
-	D3DXMATRIX worldMatrix, lightViewMatrix, lightProjectionMatrix, translateMatrix, scalingMatrix;
+	D3DXMATRIX worldMatrix, lightViewMatrix, translateMatrix, scalingMatrix, lightOrthoMatrix;
 	float posX, posY, posZ;
 	bool result;
 
@@ -646,7 +662,7 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Get the view and orthographic matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
-	m_Light->GetProjectionMatrix(lightProjectionMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 
 		// Setup the translation matrix for the cube model.
@@ -655,7 +671,7 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Render the cube model with the depth shader.
 	m_objects[0]->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -670,7 +686,7 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Render the sphere model with the depth shader.
 	m_objects[1]->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[1]->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[1]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -689,7 +705,7 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Render the ground model with the depth shader.
 	m_objects[3]->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[3]->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[3]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -709,7 +725,7 @@ bool GraphicsClass::RenderSceneToTexture()
 bool GraphicsClass::Render()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, translateMatrix, scalingMatrix, reflectionMatrix;
-	D3DXMATRIX lightViewMatrix, lightProjectionMatrix;
+	D3DXMATRIX lightViewMatrix, lightOrthoMatrix;
 	bool result;
 	float posX, posY, posZ;
 
@@ -738,7 +754,7 @@ bool GraphicsClass::Render()
 
 		// Get the light's view and projection matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
-	m_Light->GetProjectionMatrix(lightProjectionMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 		// Setup the translation matrix for the cube model.
 	m_objects[0]->GetPosition(posX, posY, posZ);
@@ -749,7 +765,7 @@ bool GraphicsClass::Render()
 
 	// Render the model using the shadow shader.
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
-		lightProjectionMatrix, m_objects[0]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		lightOrthoMatrix, m_objects[0]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
 		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{
@@ -766,7 +782,7 @@ bool GraphicsClass::Render()
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_objects[1]->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[1]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
-		lightProjectionMatrix, m_objects[1]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		lightOrthoMatrix, m_objects[1]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
 		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{
@@ -783,7 +799,7 @@ bool GraphicsClass::Render()
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_objects[5]->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[5]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
-		lightProjectionMatrix, m_objects[5]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		lightOrthoMatrix, m_objects[5]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
 		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{
@@ -800,7 +816,7 @@ bool GraphicsClass::Render()
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_objects[6]->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[6]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
-		lightProjectionMatrix, m_objects[6]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		lightOrthoMatrix, m_objects[6]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
 		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{
@@ -849,7 +865,7 @@ bool GraphicsClass::Render()
 	// Render the ground model using the shadow shader.
 	m_objects[4]->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[4]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
-		lightProjectionMatrix, m_objects[4]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		lightOrthoMatrix, m_objects[4]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
 		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{

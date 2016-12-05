@@ -90,6 +90,21 @@ D3DXVECTOR3 LightClass::GetPosition()
 	return m_position;
 }
 
+void LightClass::GenerateOrthoMatrix(float width, float depthPlane, float nearPlane)
+{
+	// Create the orthographic matrix for the light.
+	D3DXMatrixOrthoLH(&m_orthoMatrix, width, width, nearPlane, depthPlane);
+
+	return;
+}
+
+
+void LightClass::GetOrthoMatrix(D3DXMATRIX& orthoMatrix)
+{
+	orthoMatrix = m_orthoMatrix;
+	return;
+}
+
 void LightClass::GenerateViewMatrix()
 {
 	D3DXVECTOR3 up;
@@ -106,30 +121,11 @@ void LightClass::GenerateViewMatrix()
 	return;
 }
 
-void LightClass::GenerateProjectionMatrix(float screenDepth, float screenNear)
-{
-	float fieldOfView, screenAspect;
 
 
-	// Setup field of view and screen aspect for a square light source.
-	fieldOfView = (float)D3DX_PI / 2.0f;
-	screenAspect = 1.0f;
-
-	// Create the projection matrix for the light.
-	D3DXMatrixPerspectiveFovLH(&m_projectionMatrix, fieldOfView, screenAspect, screenNear, screenDepth);
-
-	return;
-}
 
 void LightClass::GetViewMatrix(D3DXMATRIX& viewMatrix)
 {
 	viewMatrix = m_viewMatrix;
-	return;
-}
-
-
-void LightClass::GetProjectionMatrix(D3DXMATRIX& projectionMatrix)
-{
-	projectionMatrix = m_projectionMatrix;
 	return;
 }

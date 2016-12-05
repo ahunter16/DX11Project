@@ -90,21 +90,30 @@ float4 ShadowPixelShader(PixelInputType input) : SV_TARGET
 		// If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
 		if(lightDepthValue < depthValue)
 		{
-		    // Calculate the amount of light on this pixel.
-			lightIntensity = saturate(dot(input.normal, input.lightPos));
+            // Calculate the amount of light on this pixel.
+            lightIntensity = saturate(dot(input.normal, lightDir));
 
-		    if(lightIntensity > 0.0f)
-			{
-                color += diffuseColor * lightIntensity;
+            if (lightIntensity > 0.0f)
+            {
+                // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
+                color += (diffuseColor * lightIntensity);
 
+                // Saturate the final light color.
                 color = saturate(color);
-
-                reflection = normalize(2 * lightIntensity * (input.normal - lightDir));
-
-                specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower) * specularColor;
             }
-		}
+        }
 	}
+    else
+    {
+        // If this is outside the area of shadow map range then draw things normally with regular lighting.
+        lightIntensity = saturate(dot(input.normal, lightDir));
+        if (lightIntensity > 0.0f)
+        {
+            color += (diffuseColor * lightIntensity);
+            color = saturate(color);
+        }
+    }
+
 
 
     //color = saturate(color + specular);

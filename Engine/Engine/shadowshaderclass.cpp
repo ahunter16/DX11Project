@@ -10,7 +10,6 @@ ShadowShaderClass::ShadowShaderClass()
 	m_sampleStateClamp = 0;
 	m_matrixBuffer = 0;
 	m_lightBuffer = 0;
-	m_lightBuffer2 = 0;
 }
 
 
@@ -73,7 +72,6 @@ bool ShadowShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR*
 	D3D11_BUFFER_DESC lightBufferDesc;
 
 
-	D3D11_BUFFER_DESC lightBufferDesc2;
 
 
 	// Initialize the pointers to null
@@ -233,20 +231,6 @@ bool ShadowShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR*
 		return false;
 	}
 
-	// Setup the description of the light dynamic cbuffer that is in the vertex shader.
-	lightBufferDesc2.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc2.ByteWidth = sizeof(LightBufferType2);
-	lightBufferDesc2.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc2.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc2.MiscFlags = 0;
-	lightBufferDesc2.StructureByteStride = 0;
-
-	// Create the cbuffer pointer so we can access the vertex shader cbuffer from within this class.
-	result = device->CreateBuffer(&lightBufferDesc2, NULL, &m_lightBuffer2);
-	if (FAILED(result))
-	{
-		return false;
-	}
 
 	return true;
 }
@@ -261,11 +245,6 @@ void ShadowShaderClass::ShutdownShader()
 		m_lightBuffer = 0;
 	}
 
-	if (m_lightBuffer2)
-	{
-		m_lightBuffer2->Release();
-		m_lightBuffer2 = 0;
-	}
 
 	// Release the matrix cbuffer
 	if (m_matrixBuffer)
@@ -422,28 +401,6 @@ bool ShadowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, 
 	// Finally set the light cbuffer in the pixel shader with the updated values.
 	deviceContext->PSSetConstantBuffers(bufferNumber, 1, &m_lightBuffer);
 
-	// Lock the second light cbuffer so it can be written to.
-	result = deviceContext->Map(m_lightBuffer2, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Get a pointer to the data in the cbuffer
-	dataPtr3 = (LightBufferType2*)mappedResource.pData;
-
-	// Copy the lighting variables into the cbuffer
-	dataPtr3->lightPosition = lightPosition;
-	dataPtr3->padding = 0.0f;
-
-	// Unlock the cbuffer
-	deviceContext->Unmap(m_lightBuffer2, 0);
-
-	// Set the position of the light cbuffer in the vertex shader.
-	bufferNumber = 1;
-
-	// Finally set the light cbuffer in the pixel shader with the updated values.
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_lightBuffer2);
 
 	return true;
 }

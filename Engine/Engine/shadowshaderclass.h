@@ -64,7 +64,7 @@ private:
 	ID3D11SamplerState* m_sampleStateClamp;
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_lightBuffer;
-	ID3D11Buffer* m_lightBuffer2;
+	//ID3D11Buffer* m_lightBuffer2;
 };
 
 
