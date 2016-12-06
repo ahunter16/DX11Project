@@ -38,6 +38,9 @@ public:
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
 
+	void TurnOnCulling();
+	void TurnOffCulling();
+
 	ID3D11DepthStencilView* GetDepthStencilView();
 	void SetBackBufferRenderTarget();
 	void ResetViewport();
@@ -46,6 +49,7 @@ public:
 private:
 	bool m_vsync_enabled;
 	
+	ID3D11RasterizerState* m_rasterStateNoCulling;
 	IDXGISwapChain* m_swapChain;
 	ID3D11Device* m_device;
 	ID3D11DeviceContext* m_deviceContext;

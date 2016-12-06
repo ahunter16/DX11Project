@@ -60,28 +60,42 @@ void CameraClass::Render()
 	D3DXVECTOR3 up;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 lookAt;
-	float radians;
+	D3DXMATRIX rotationMatrix;
+	float radians, yaw, pitch, roll;
 
 
-	//Setup the vector that points upwards.
+	//Set up the vector that points upwards
 	up.x = 0.0f;
 	up.y = 1.0f;
 	up.z = 0.0f;
 
-	//Setup the position of the camera in the world.
+	//Set up the position of the camera in the world
 	position.x = m_positionX;
 	position.y = m_positionY;
 	position.z = m_positionZ;
 
-	//Calculate the rotation in radians.
+	//Calculate the rotation in radians
 	radians = m_rotationY * 0.0174532925f;
 
-	//Setup where the camera is looking.
-	lookAt.x = sinf(radians) + m_positionX;
-	lookAt.y = m_positionY;
-	lookAt.z = cosf(radians) + m_positionZ;
+	//Set up where the camera is looking
+	lookAt.x = 0.0f;
+	lookAt.y = 0.0f;
+	lookAt.z = 1.0f;
 
-	//Create the view matrix from the three vectors.
+	pitch = m_rotationX * 0.0174532925f;
+	yaw = m_rotationY * 0.0174532925f;
+	roll = m_rotationZ * 0.0174532925f;
+
+	//Get the rotation matrix
+	D3DXMatrixRotationYawPitchRoll(&rotationMatrix, yaw, pitch, roll);
+
+	//Transform the lookAt and up vectors by the rotation matrix
+	D3DXVec3TransformCoord(&lookAt, &lookAt, &rotationMatrix);
+	D3DXVec3TransformCoord(&up, &up, &rotationMatrix);
+
+	//Move the rotated camera to the viewer's position
+	lookAt = position + lookAt;
+
 	D3DXMatrixLookAtLH(&m_viewMatrix, &position, &lookAt, &up);
 
 	return;

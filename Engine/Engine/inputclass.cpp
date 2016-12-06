@@ -233,6 +233,15 @@ bool InputClass::IsEscapePressed()
 	return false;
 }
 
+bool InputClass::IsWPressed()
+{
+	if (m_keyboardState[DIK_W])
+	{
+		return true;
+	}
+	return false;
+}
+
 bool InputClass::IsAPressed()
 {
 	if (m_keyboardState[DIK_A])
@@ -242,7 +251,43 @@ bool InputClass::IsAPressed()
 	return false;
 }
 
-bool InputClass::IsLeftArrowPressed()
+bool InputClass::IsSPressed()
+{
+	if (m_keyboardState[DIK_S])
+	{
+		return true;
+	}
+	return false;
+}
+
+bool InputClass::IsDPressed()
+{
+	if (m_keyboardState[DIK_D])
+	{
+		return true;
+	}
+	return false;
+}
+
+bool InputClass::IsUpPressed()
+{
+	if (m_keyboardState[DIK_UP])
+	{
+		return true;
+	}
+	return false;
+}
+
+bool InputClass::IsDownPressed()
+{
+	if (m_keyboardState[DIK_DOWN])
+	{
+		return true;
+	}
+	return false;
+}
+
+bool InputClass::IsLeftPressed()
 {
 	if (m_keyboardState[DIK_LEFT])
 	{
@@ -251,7 +296,7 @@ bool InputClass::IsLeftArrowPressed()
 	return false;
 }
 
-bool InputClass::IsRightArrowPressed()
+bool InputClass::IsRightPressed()
 {
 	if (m_keyboardState[DIK_RIGHT])
 	{
@@ -260,41 +305,25 @@ bool InputClass::IsRightArrowPressed()
 	return false;
 }
 
-D3DXVECTOR3 InputClass::HandleMovement(float dt)
+bool InputClass::IsCtrlPressed()
 {
-	float mul = 10;
-	D3DXVECTOR3 offset = D3DXVECTOR3(0, 0, 0);
-
-	if (m_keyboardState[DIK_A])
-	{
-		offset.x += mul * dt;
-	}
-	if (m_keyboardState[DIK_D])
-	{
-		offset.x -= mul * dt;
-	}
 	if (m_keyboardState[DIK_LCONTROL])
 	{
-		offset.y -= mul * dt;
+		return true;
 	}
+	return false;
+}
+
+bool InputClass::IsSpacePressed()
+{
 	if (m_keyboardState[DIK_SPACE])
 	{
-		offset.y += mul * dt;
+		return true;
 	}
-	if (m_keyboardState[DIK_W])
-	{
-		offset.z += mul * dt;
-	}
-	if (m_keyboardState[DIK_S])
-	{
-		offset.z -= mul * dt;
-	}
-
-
-	return offset;
-
-
+	return false;
 }
+
+
 
 void InputClass::GetMouseLocation(int& mouseX, int& mouseY)
 {

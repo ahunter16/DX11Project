@@ -17,6 +17,7 @@ D3DClass::D3DClass()
 	m_depthDisabledStencilState = 0;
 	m_alphaEnableBlendingState = 0;
 	m_alphaDisableBlendingState = 0;
+	m_rasterStateNoCulling = 0;
 }
 
 
@@ -306,6 +307,25 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	//Now set the rasterizer state.
 	m_deviceContext->RSSetState(m_rasterState);
+
+	//Set up a raster desc to allow backface culling to be turned off
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_NONE;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	// Create the no culling rasterizer state.
+	result = m_device->CreateRasterizerState(&rasterDesc, &m_rasterStateNoCulling);
+	if (FAILED(result))
+	{
+		return false;
+	}
 	
 	//Setup the m_viewport for rendering.
     m_viewport.Width = (float)screenWidth;
@@ -361,16 +381,6 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	//Clear the blend state description.
 	ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
 
-	////Create an alpha enabled blend state description.
-	//blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
- //   blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
- //   blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
- //   blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
- //   blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
- //   blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
- //   blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
- //   blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-
     //Create an alpha enabled blend state description
 	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
 	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
@@ -408,6 +418,13 @@ void D3DClass::Shutdown()
 	if(m_swapChain)
 	{
 		m_swapChain->SetFullscreenState(false, NULL);
+	}
+
+
+	if (m_rasterStateNoCulling)
+	{
+		m_rasterStateNoCulling->Release();
+		m_rasterStateNoCulling = 0;
 	}
 
 	if(m_alphaEnableBlendingState)
@@ -618,6 +635,21 @@ void D3DClass::ResetViewport()
 {
 	// Set the viewport.
 	m_deviceContext->RSSetViewports(1, &m_viewport);
+
+	return;
+}
+
+void D3DClass::TurnOnCulling()
+{
+	m_deviceContext->RSSetState(m_rasterState);
+
+	return;
+}
+
+
+void D3DClass::TurnOffCulling()
+{
+	m_deviceContext->RSSetState(m_rasterStateNoCulling);
 
 	return;
 }

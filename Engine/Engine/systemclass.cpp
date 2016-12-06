@@ -210,7 +210,8 @@ void SystemClass::Run()
 
 bool SystemClass::Frame()
 {
-	float dt, rotationY;
+	float dt;
+	D3DXVECTOR3 pos, rot;
 	bool keyDown, result;
 	int mouseX, mouseY;
 
@@ -234,24 +235,42 @@ bool SystemClass::Frame()
 	//Set the frame time for calculating the updates position
 	m_Position->SetFrameTime(m_Timer->GetTime());
 
-	//Check if the left or right arrow key has been pressed, if so rotate accordingly
-	keyDown = m_Input->IsLeftArrowPressed();
+	keyDown = m_Input->IsAPressed();
 	m_Position->TurnLeft(keyDown);
-	
-	keyDown = m_Input->IsRightArrowPressed();
+
+	keyDown = m_Input->IsDPressed();
 	m_Position->TurnRight(keyDown);
 
-	m_Position->GetRotation(rotationY);
+	keyDown = m_Input->IsWPressed();
+	m_Position->MoveForward(keyDown);
 
-	D3DXVECTOR3 cameraPos = m_Input->HandleMovement(dt);
+	keyDown = m_Input->IsSPressed();
+	m_Position->MoveBackward(keyDown);
+
+	keyDown = m_Input->IsSpacePressed();
+	m_Position->MoveUpward(keyDown);
+
+	keyDown = m_Input->IsCtrlPressed();
+	m_Position->MoveDownward(keyDown);
+
+	keyDown = m_Input->IsUpPressed();
+	m_Position->LookUpward(keyDown);
+
+	keyDown = m_Input->IsDownPressed();
+	m_Position->LookDownward(keyDown);
+
+
+
+	m_Position->GetRotation(rot.x, rot.y, rot.z);
+	m_Position->GetPosition(pos.x, pos.y, pos.z);
+
 
 	//Do the frame processing for the graphics object.
-	result = m_Graphics->Frame(cameraPos, mouseX, mouseY, m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), dt, rotationY);
+	result = m_Graphics->Frame(mouseX, mouseY, m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), dt, pos, rot);
 	if (!result)
 	{
 		return false;
 	}
-
 
 	return true;
 }

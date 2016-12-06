@@ -36,7 +36,7 @@
 /////////////
 //GLOBALS //
 /////////////
-const bool FULL_SCREEN = false;
+const bool FULL_SCREEN = true;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 100.0f;
 const float SCREEN_NEAR = 1.0f;
@@ -58,7 +58,7 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(D3DXVECTOR3, int, int, int, int, float, float, float);
+	bool Frame(int, int, int, int, float, float, D3DXVECTOR3, D3DXVECTOR3);
 	//bool Render(float, float);
 	bool Render();
 

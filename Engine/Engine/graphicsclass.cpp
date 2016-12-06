@@ -407,6 +407,26 @@ bool GraphicsClass::InitializeObjects(HWND hwnd)
 		return false;
 	}
 
+	pos.x = 15.0f;
+	pos.y = -1.0f;
+	pos.z = 5.0f;
+	result = InitializeObject("../Engine/data/nature/EEhead.txt", L"../Engine/data/nature/stone.png", L"../Engine/data/nature/grey.png", pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the  boat gameobject.", L"Error", MB_OK);
+		return false;
+	}
+
+	pos.x = -8.0f;
+	pos.y = -1.0f;
+	pos.z = 4.0f;
+	result = InitializeObject("../Engine/data/nature/tent2.txt", L"../Engine/data/nature/tree.png", L"../Engine/data/nature/tree.png", pos, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the game object", L"Error", MB_OK);
+		return false;
+	}
+
 
 	return true;
 }
@@ -602,7 +622,7 @@ void GraphicsClass::Shutdown()
 }
 
 
-bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int fps, int cpu, float frameTime, float dt, float rotationY)
+bool GraphicsClass::Frame(int mouseX, int mouseY, int fps, int cpu, float frameTime, float dt, D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 {
 	bool result;
 	static float lightAngle = 180.0f;
@@ -661,13 +681,9 @@ bool GraphicsClass::Frame(D3DXVECTOR3 cameraOffset, int mouseX, int mouseY, int 
 	{
 		return false;
 	}
-
-
-
-	//	difftime()
-	D3DXVECTOR3	cameraPos = m_Camera->GetPosition() + cameraOffset;
-	m_Camera->SetPosition(cameraPos.x, cameraPos.y, cameraPos.z);
-	m_Camera->SetRotation(mouseX/800, rotationY, 0.0f);
+	
+	m_Camera->SetPosition(pos.x, pos.y, pos.z);
+	m_Camera->SetRotation(rot.x, rot.y, rot.z);
 
 	// Run the frame processing for the particle system.
 	m_ParticleSystem->Frame(frameTime, m_D3D->GetDeviceContext());
@@ -696,30 +712,24 @@ bool GraphicsClass::RenderSceneToTexture()
 	bool result;
 
 
-		// Set the render target to be the render to texture.
-		m_ShadowMapTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	//Set the render target to be the render to texture
+	m_ShadowMapTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
-	// Clear the render to texture.
+	//Clear the render to texture
 	m_ShadowMapTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 
+	m_Light->GenerateViewMatrix();
 
-		// Generate the light view matrix based on the light's position.
-		m_Light->GenerateViewMatrix();
-
-	// Get the world matrix from the d3d object.
 	m_D3D->GetWorldMatrix(worldMatrix);
 
-	// Get the view and orthographic matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
 	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 
-		// Setup the translation matrix for the cube model.
-		m_objects[0]->GetPosition(posX, posY, posZ);
+	m_objects[0]->GetPosition(posX, posY, posZ);
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
 
-	// Render the cube model with the depth shader.
 	m_objects[0]->Render(m_D3D->GetDeviceContext());
 	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[0]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
@@ -727,14 +737,13 @@ bool GraphicsClass::RenderSceneToTexture()
 		return false;
 	}
 
-	// Reset the world matrix.
 	m_D3D->GetWorldMatrix(worldMatrix);
 
-	// Setup the translation matrix for the sphere model.
+
 	m_objects[1]->GetPosition(posX, posY, posZ);
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
 
-	// Render the sphere model with the depth shader.
+
 	m_objects[1]->Render(m_D3D->GetDeviceContext());
 	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[1]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
@@ -742,18 +751,16 @@ bool GraphicsClass::RenderSceneToTexture()
 		return false;
 	}
 
-	// Reset the world matrix.
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetWorldMatrix(scalingMatrix);
 
 	D3DXMatrixScaling(&scalingMatrix, 10.0f, 1.0f, 10.0f);
 
-	// Setup the translation matrix for the ground model.
+
 	m_objects[3]->GetPosition(posX, posY, posZ);
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
 	worldMatrix = worldMatrix*scalingMatrix;
 
-	// Render the ground model with the depth shader.
 	m_objects[3]->Render(m_D3D->GetDeviceContext());
 	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[3]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
@@ -761,11 +768,27 @@ bool GraphicsClass::RenderSceneToTexture()
 		return false;
 	}
 
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetWorldMatrix(scalingMatrix);
+	D3DXMatrixRotationY(&scalingMatrix, 90);
 
-		// Reset the render target back to the original back buffer and not the render to texture anymore.
-		m_D3D->SetBackBufferRenderTarget();
+	m_objects[8]->GetPosition(posX, posY, posZ);
+	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
 
-	// Reset the viewport back to the original.
+	worldMatrix = scalingMatrix*worldMatrix;
+
+	m_objects[8]->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_objects[8]->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+
+	//Reset the render target back to the original back buffer and not the render to texture
+	m_D3D->SetBackBufferRenderTarget();
+
+	//Reset the viewport
 	m_D3D->ResetViewport();
 
 	return true;
@@ -774,14 +797,14 @@ bool GraphicsClass::RenderSceneToTexture()
 
 bool GraphicsClass::Render()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, translateMatrix, scalingMatrix, reflectionMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, translateMatrix, scalingMatrix, reflectionMatrix, orthoMatrix, rotationMatrix;
 	D3DXMATRIX lightViewMatrix, lightOrthoMatrix;
 	bool result;
 	float posX, posY, posZ;
 
 
-		// First render the scene to a texture.
-		result = RenderSceneToTexture();
+	// First render the scene to a texture.
+	result = RenderSceneToTexture();
 	if (!result)
 	{
 		return false;
@@ -794,17 +817,36 @@ bool GraphicsClass::Render()
 		5*col.z, 
 		1.0f);
 
-	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
-		// Generate the light view matrix based on the light's position.
-		m_Light->GenerateViewMatrix();
 
-	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Light->GenerateViewMatrix();
+
+
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
 
+	/////////Render TEXT
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_D3D->TurnZBufferOff();
+
+	// Turn on the alpha blending before rendering the text.
+	m_D3D->TurnOnAlphaBlending();
+
+	// Render the text strings.
+	result = m_Text->Render(m_D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off alpha blending after rendering the text.
+	m_D3D->TurnOffAlphaBlending();
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_D3D->TurnZBufferOn();
 
 		// Get the light's view and projection matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
@@ -879,6 +921,31 @@ bool GraphicsClass::Render()
 
 	// Reset the world matrix.
 	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetWorldMatrix(rotationMatrix);
+
+
+	D3DXMatrixRotationY(&rotationMatrix, -45.0f);
+
+	
+
+	// Setup the translation matrix for the sphere model.
+	m_objects[7]->GetPosition(posX, posY, posZ);
+	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
+
+	worldMatrix =  rotationMatrix * worldMatrix;
+
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_objects[7]->Render(m_D3D->GetDeviceContext());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[7]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
+		lightOrthoMatrix, m_objects[7]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetWorldMatrix(scalingMatrix);
 
 	D3DXMatrixScaling(&scalingMatrix, 10.0f, 1.0f, 10.0f);
@@ -926,12 +993,33 @@ bool GraphicsClass::Render()
 		return false;
 	}
 
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetWorldMatrix(scalingMatrix);
+	D3DXMatrixRotationY(&scalingMatrix, 90);
+
+	m_objects[8]->GetPosition(posX, posY, posZ);
+	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
+
+	worldMatrix = scalingMatrix*worldMatrix;
+	m_D3D->TurnOffCulling();
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_objects[8]->Render(m_D3D->GetDeviceContext());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_objects[8]->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
+		lightOrthoMatrix, m_objects[8]->m_Model->GetTextureArray()[0], m_ShadowMapTexture->GetShaderResourceView(), m_Light->GetPosition(),
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
+	if (!result)
+	{
+		return false;
+	}
+	m_D3D->TurnOnCulling();
+
 	// Get the world, view, and projection matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_objects[0]->GetPosition(posX, posY, posZ);
-	D3DXMatrixTranslation(&worldMatrix, posX+1, -0.5f, posZ+1);
+	D3DXMatrixTranslation(&worldMatrix, posX+1, -1.0f, posZ+1);
 	// Turn on alpha blending.
 	m_D3D->TurnOnAlphaBlending();
 
@@ -959,7 +1047,7 @@ bool GraphicsClass::Render()
 
 bool GraphicsClass::RenderToTexture()
 {
-	D3DXMATRIX worldMatrix, reflectionViewMatrix, projectionMatrix;
+	D3DXMATRIX worldMatrix, reflectionViewMatrix, projectionMatrix, rotationMatrix;
 	bool result;
 
 	//Set the render target to be the render-to-texture
@@ -990,7 +1078,9 @@ bool GraphicsClass::RenderToTexture()
 
 	//Get the world and projection matrices
 	m_D3D->GetWorldMatrix(worldMatrix);
+
 	m_D3D->GetProjectionMatrix(projectionMatrix);
+
 
 	//D3DXMatrixRotationY(&worldMatrix, rotation);
 	objectPos = m_objects[6]->GetPosition();
@@ -1001,6 +1091,28 @@ bool GraphicsClass::RenderToTexture()
 
 	//Render the model using the texture shader and the reflection view shader
 	m_TextureShader->Render(m_D3D->GetDeviceContext(), m_objects[6]->GetIndexCount(), worldMatrix, reflectionViewMatrix, projectionMatrix, m_objects[6]->m_Model->GetTextureArray()[0]);
+
+	//Get the world and projection matrices
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_D3D->GetWorldMatrix(rotationMatrix);
+
+
+	D3DXMatrixRotationY(&rotationMatrix, -45.0f);
+
+	//D3DXMatrixRotationY(&worldMatrix, rotation);
+	objectPos = m_objects[7]->GetPosition();
+
+	D3DXMatrixTranslation(&worldMatrix, objectPos.x, objectPos.y, objectPos.z);
+
+	worldMatrix = rotationMatrix * worldMatrix;
+	//Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing
+	m_objects[7]->Render(m_D3D->GetDeviceContext());
+
+	//Render the model using the texture shader and the reflection view shader
+	m_TextureShader->Render(m_D3D->GetDeviceContext(), m_objects[7]->GetIndexCount(), worldMatrix, reflectionViewMatrix, projectionMatrix, m_objects[7]->m_Model->GetTextureArray()[0]);
+
+
 
 	//Reset the render target back to the original back buffer and not the render-to-texture anymore
 	m_D3D->SetBackBufferRenderTarget();

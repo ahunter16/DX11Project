@@ -39,11 +39,19 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	bool IsAPressed();
-	bool IsRightArrowPressed();
-	bool IsLeftArrowPressed();
+	bool IsUpPressed();
+	bool IsDownPressed();
+	bool IsRightPressed();
+	bool IsLeftPressed();
 
-	D3DXVECTOR3 HandleMovement(float dt);
+	bool IsWPressed();
+	bool IsAPressed();
+	bool IsSPressed();
+	bool IsDPressed();
+
+	bool IsCtrlPressed();
+	bool IsSpacePressed();
+
 	bool IsEscapePressed();
 	void GetMouseLocation(int&, int&);
 
